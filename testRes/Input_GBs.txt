@@ -1,0 +1,5 @@
+/Users/tipputa/Google/1_study/1_circos_for_paper/circos_testcase/170404_python_check/gb5/gb/NC_000915.1.gb	NC_000915.1
+/Users/tipputa/Google/1_study/1_circos_for_paper/circos_testcase/170404_python_check/gb5/gb/NC_011333.1.gb	NC_011333.1
+/Users/tipputa/Google/1_study/1_circos_for_paper/circos_testcase/170404_python_check/gb5/gb/NC_011498.1.gb	NC_011498.1
+/Users/tipputa/Google/1_study/1_circos_for_paper/circos_testcase/170404_python_check/gb5/gb/NC_012973.1.gb	NC_012973.1
+/Users/tipputa/Google/1_study/1_circos_for_paper/circos_testcase/170404_python_check/gb5/gb/NC_014256.1.gb	NC_014256.1
