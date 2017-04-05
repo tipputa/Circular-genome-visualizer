@@ -161,14 +161,8 @@ if __name__ == '__main__':
         sort_key = None
         min_genes = None
     else:
-        RootDir = '/Users/tipputa/Google/1_study/1_circos_for_paper/circos_testcase/170404_python_check/gb73/'
-        df_name = RootDir + "RingOrder_aligned_df.tsv"
-        tag = "test_min2"
-        sort_key = None
-        min_genes = 40
-
-#        print(useage)
-#        quit()
+        print(useage)
+        quit()
     
     CircosIN = []
     df_info, df_locusTag, Gsize = readInfo(RootDir, df_name, CircosIN, min_genes)
