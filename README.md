@@ -45,7 +45,7 @@ There are two arguments as follows:
 <li> path to directory containing GenBank files (.gb) </li>
 </ol>
 
-#### Run visualize
+#### Run visualization
 ```sh
 python runVisualize.py  <output directory> <setting file> <option; key word for output; default:"test"> <option; the minimum number of genes in each cluster; default: 1> <option; sorting column name; default: None>
 ```
