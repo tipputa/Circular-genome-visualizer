@@ -30,27 +30,23 @@ useage = """
 Error: please input results and genbank directories.
 
 Usage: 
-   python runAllProcess.py <output directory> <input directory (GenBank files)>
-   e.g: python runAllProcess.py ~/study/ ~/study/gb/
+   python runAllProcess.py <output directory> <input directory (GenBank files)> <path to the cluster file>
+   e.g: python runAllProcess.py ~/test/ ~/test/gb/ ~/test/data/all_blast_results.txt
 """
 
 if __name__ == '__main__':
     timeRecorder = []
     recordAll = timeRecord()
 
-    if len(sys.argv)==3:
+    if len(sys.argv)==4:
         RootDir = sys.argv[1] + "/"
         gbDir = sys.argv[2] + "/"
-        
+        Cluster = sys.argv[3] 
     else:
-        RootDir = '/Users/tipputa/Google/1_study/1_circos_for_paper/circos_testcase/170404_python_check/gb3/'
-        gbDir =  RootDir + 'gb/'
+       print(useage)
+       quit()
         
- #       print(useage)
-  #      quit()
-        
-    createOrtho.runsWOblast(timeRecorder, RootDir, gbDir)
-    df = pd.read_csv(RootDir + '/data/all_blast_results.tsv', delimiter = "\t")
+    df = pd.read_csv(Cluster, delimiter = "\t")
     createCircos.runs(df, timeRecorder, RootDir, gbDir)
     recordAll.fin("All process", timeRecorder)
     print("\n\nFin.")

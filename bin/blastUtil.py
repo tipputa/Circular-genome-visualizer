@@ -9,11 +9,11 @@ import os.path
 import os
 
 
-BLASTPATH = "/Users/tipputa/bin/ncbi-blast-2.5.0+/bin/"
+#BLASTPATH = "Please change your blast path"
 
 
 def createDB(fastaFileName, dbFileName, dbType="prot"):
-    toolPath = BLASTPATH + "makeblastdb"
+    toolPath = "makeblastdb"
     command = " ".join(
         [toolPath, "-in", fastaFileName, "-dbtype", dbType, "-out", dbFileName])
     os.system(command)

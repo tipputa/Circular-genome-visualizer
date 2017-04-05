@@ -67,19 +67,21 @@ def createTSV(record, tsvFileName):
 
 class timeRecord():
     start = time.time()
-
     def fin(self,str,timeRecorder):
-        elapsed_time = time.time() - self.start
-        timeRecordS = str + "elapsed_time :{0}".format(elapsed_time) + "[sec]"
-        print(timeRecordS)
+        elapsed_time = round(time.time() - self.start,1)
+        if elapsed_time > 60:
+            elapsed_time_min = round(elapsed_time/60,1)
+            timeRecordS = "Elapsed_time (" + str + "):{0}".format(elapsed_time_min) + "[min]"
+        else:
+            timeRecordS = "Elapsed_time (" + str + "):{0}".format(elapsed_time) + "[sec]"
+
+        print("\n" + timeRecordS + "\n")
         timeRecorder.append(timeRecordS)
-        
         self.start = time.time()
   
 class Run():
-    def __init__(self, binDir, RootDir, gbDir):
-        print("Setting: Bin %s,\n Root %s,\n gb %s" % (binDir, RootDir, gbDir))
-        self.binDir = binDir
+    def __init__(self, RootDir, gbDir):
+        print("\nSetting:\n  Root directory: %s,\n  GenBank directory: %s\n\n" % (RootDir, gbDir))
         self.RootDir = RootDir
         self.gbDir = gbDir
         self.dataDir = RootDir + "data/"
@@ -107,7 +109,7 @@ class Run():
     
     def blastall(self,list):
         max = len(list) ** 2 
-        print("Excute Protein Blast (",max,"patterns)")
+        print("Excute Protein Blast (" + str(max) + " patterns)")
         pbar = tqdm(total=max)
         for id in list:
             for id2 in list:
@@ -141,111 +143,29 @@ class Run():
         for id in acc:
             df = self.cTable(id,accs)
             dfs.append(df)
-        out = pd.DataFrame()
-        
+        out = pd.DataFrame()        
         for id in dfs:
-            out = pd.concat([out,id])
-        
+            out = pd.concat([out,id])        
         output = out.drop_duplicates()
-        return(output)
+        output2 = self.removeHyphen(output)
+        return(output2)
         
-    def check(self,a,b):
-        for i in range(0,len(a)):
-            if not b[i] == "-":
-                if a[i] == "-":
-                    a[i] = b[i]
-                if isinstance(a[i],list):
-                    if not b[i] in a[i]:
-                        a[i].append(b[i])
-                elif isinstance(b[i], list):
-                    if not a[i] in b[i]:
-                        b[i].append(a[i])
-                else:
-                    if(a[i]!=b[i]):
-                        a[i] = [a[i],b[i]]
-        return(a)
-    
-    #       "{0:03d}".format(1)
-    
-    def checkDup(self,df,i):
-        a = df.ix[:,i]
-        nrow,  = a.shape 
-        pool = []
-        dup = []
-        for i in range(0,nrow):
-            if not a[i] == "-":
-                if isinstance(a[i], list):
-                    b = a[i].copy()
-                    while b:
-                        tmp = b.pop()
-                        if tmp in pool:
-                            if not tmp in dup:
-                                dup.append(tmp)
-                        else:
-                            pool.append(tmp)
-                else:
-                    if a[i] in pool:
-                        if not a[i] in dup:
-                        #    print("duplicated",a[i])
-                            dup.append(a[i])
-                    else:
-                        pool.append(a[i])
-        return(dup)
-    
-    def rmDuplication(self,d, dup, col):
-        while dup:
-            tmp = dup.pop()
-            tag = d.ix[d.ix[:,col]==tmp,].index
-            target = d.ix[tag].copy()
-            new = self.rmDup(target)
-            d = d.drop(tag)
-            d = d.append(new)        
-        return(d)
-        
-    def rmDup(self,a):
-        nrow, col = a.shape
-        out = a.ix[0]
-        for i in range(1,nrow):
-            self.check(out,a.ix[i])
-        return(out)
-    
-    def removeDuplications(self,df):    
+    def removeHyphen(self, df):
         nrow, ncol = df.shape
-        for i in range(0,ncol):
-            dup = self.checkDup(df,i)
-            df = self.rmDuplication(df, dup, i)
-            
-        def removeHyphen(df):
-            nrow, ncol = df.shape
-            tag = []
-            sum = 0
-            for i in range(0, nrow):
-                for j in range(0,ncol):
-                    if not df.ix[i,j] == "-":
-                        break
-                    else:
-                        sum = sum + 1
-                if(sum == ncol):
-                    tag.append(df.ix[i].name)
-                sum=0    
-            df = df.drop(tag)
-            return(df)
-        df = removeHyphen(df)
-        return(df)
-        
-        
-    def checkList(self,df):
-        nrow, ncol = df.shape
-        rem = []
-        for i in range(0,nrow):
+        tag = []
+        sum = 0
+        for i in range(0, nrow):
             for j in range(0,ncol):
-                if isinstance(df.ix[i,j],list):
-                    if not df.ix[i].name in rem:
-                        rem.append(df.ix[i].name)
+                if not df.ix[i,j] == "-":
                     break
-        return(rem)
-    
-            
+                else:
+                    sum = sum + 1
+            if(sum == ncol):
+                tag.append(df.ix[i].name)
+            sum=0    
+        df = df.drop(tag)
+        return(df)
+         
     def makeBlastDB(self,gbDir):
         fileNames = []
         acc = []
@@ -264,75 +184,52 @@ class Run():
                 self.makeblastdb(record, record.id)
         return(acc, fileNames)
 
-        
-def runs(timeRecorder, binDir, RootDir, gbDir):
+    def makeAccList(self,gbDir):
+        acc = []
+        LoopCounter = 1
+    
+        files = os.listdir(gbDir)
+        print ("Number of GenBank files:", len([file for file in files if file.endswith(".gb")]))
+        for file in files:
+            if file.endswith(".gb"): 
+                record = SeqIO.read(gbDir + file, "genbank")
+                print(str(LoopCounter),":", record.id)            
+                LoopCounter += 1
+                acc.append(record.id)
+        return(acc)
+ 
+ 
+def runs(timeRecorder, RootDir, gbDir):
     rec = timeRecord()        
-    run = Run(binDir, RootDir, gbDir)
+    run = Run(RootDir, gbDir)
+    print(" Creating BLASTDB and proteinFasta\n\n")
     acc, fileNames = run.makeBlastDB(gbDir)
     output = ''.join(fileNames)
     with open(run.RootDir + "Input_GBs.txt", 'w') as f:
         f.write(output)
-    rec.fin("Before BLAST, ", timeRecorder)
+    rec.fin("Before BLAST", timeRecorder)
+    print("\n Running BLAST\n")
     run.blastall(acc)
-    rec.fin("BLAST, ", timeRecorder)
+    rec.fin("BLASTexecute", timeRecorder)
 
+    print("\n  Parsing BLAST output\n")
     dfs=run.makeTable(acc)
+    dfs.to_csv(run.dataDir + "all_blast_results.tsv", sep = "\t", index = None)
+    print("Output blast result table (./data/all_blast_results.tsv)\n")
+    rec.fin("Making BLAST result tables", timeRecorder)
 
-    rec.fin("making BLAST result tables, ", timeRecorder)
+    return(dfs)
 
-    dfs_rmDup = run.removeDuplications(dfs)
-    Checks = run.checkList(dfs_rmDup)
-    dfs_Duplications = dfs_rmDup.ix[Checks]
-    dfs_rmDupAll = dfs_rmDup.drop(Checks)
-    dfs_rmDup.to_csv(run.dataDir + "input_including_duplicates.tsv", sep = "\t", index = None)
-    dfs_Duplications.to_csv(run.dataDir + "duplicates.tsv", sep = "\t", index = None)
-    dfs_rmDupAll.to_csv(run.dataDir + "input_rmDup.tsv", sep = "\t", index = None)
-
-    print("Number of removed gene clusters : ",len(Checks))    
-
-    rec.fin("After BLAST, ", timeRecorder)    
-    return(dfs_rmDupAll)
-
-def runsWOblast(timeRecorder, binDir, RootDir, gbDir):
+def runsWOblast(timeRecorder, RootDir, gbDir):
     rec = timeRecord()        
-    run = Run(binDir, RootDir, gbDir)
-    acc, fileNames = run.makeBlastDB(gbDir)
-    output = ''.join(fileNames)
-    with open(run.RootDir + "Input_GBs.txt", 'w') as f:
-        f.write(output)
-    rec.fin("Before BLAST, ", timeRecorder)
-  #  run.blastall(acc)
-   # rec.fin("BLAST, ", timeRecorder)
-
+    run = Run(RootDir, gbDir)
+    acc = run.makeAccList(gbDir)
+    print("\n  Parsing BLAST output\n")
     dfs=run.makeTable(acc)
+    dfs.to_csv(run.dataDir + "all_blast_results.tsv", sep = "\t", index = None)
+    print("Output blast result table (./data/all_blast_results.tsv)\n")
+    rec.fin("Making BLAST result tables", timeRecorder)
 
-    rec.fin("making BLAST result tables, ", timeRecorder)
+    return(dfs)
 
-    dfs_rmDup = run.removeDuplications(dfs)
-    Checks = run.checkList(dfs_rmDup)
-    dfs_Duplications = dfs_rmDup.ix[Checks]
-    dfs_rmDupAll = dfs_rmDup.drop(Checks)
-    dfs_rmDup.to_csv(run.dataDir + "input_including_duplicates.tsv", sep = "\t", index = None)
-    dfs_Duplications.to_csv(run.dataDir + "duplicates.tsv", sep = "\t", index = None)
-    dfs_rmDupAll.to_csv(run.dataDir + "input_rmDup.tsv", sep = "\t", index = None)
-    
-    print("Number of removed gene clusters : ",len(Checks))    
-
-    rec.fin("After BLAST, ", timeRecorder)    
-    return(dfs_rmDupAll)
-
-if __name__ == '__main__':
-    recordAll = timeRecord()
-    rec = timeRecord()
-    
-    timeRecorder = []
-    binDir = "/Users/tipputa/Google/1_study/spyder/bin/"
-    RootDir = "/Users/tipputa/Google/1_study/1_circos_for_paper/circos_testcase/170105_Hpylori_allPython/"
-  #  gbDir = "/Users/tipputa/Google/1_study/1_circos_for_paper/circos_testcase/160422_Hpylori_all/gb/"
-    gbDir = "/Users/tipputa/Google/1_study/1_circos_for_paper/circos_testcase/170105_Hpylori_allPython/gb/"
-    
- #   runs(timeRecorder, binDir, RootDir, gbDir)
-    runsWOblast(timeRecorder, binDir, RootDir, gbDir)
-
-    pd.Series(timeRecord).to_csv(RootDir +   "data/Calculation_times.txt", header = None, index = None)
     

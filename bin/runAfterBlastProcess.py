@@ -31,7 +31,7 @@ Error: please input results and genbank directories.
 
 Usage: 
    python runAllProcess.py <output directory> <input directory (GenBank files)>
-   e.g: python runAllProcess.py ~/study/ ~/study/gb/
+   e.g: python runAllProcess.py ~/test/ ~/test/gb/
 """
 
 if __name__ == '__main__':
@@ -43,11 +43,8 @@ if __name__ == '__main__':
         gbDir = sys.argv[2] + "/"
         
     else:
-        RootDir = '/Users/tipputa/Google/1_study/1_circos_for_paper/circos_testcase/170404_python_check/gb3/'
-        gbDir =  RootDir + 'gb/'
-        
- #       print(useage)
-  #      quit()
+       print(useage)
+       quit()
         
     createOrtho.runsWOblast(timeRecorder, RootDir, gbDir)
     df = pd.read_csv(RootDir + '/data/all_blast_results.tsv', delimiter = "\t")

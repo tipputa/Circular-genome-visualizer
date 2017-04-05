@@ -7,12 +7,12 @@ Created on Wed Nov  2 11:20:44 2016
 
 import numpy as np
 from Bio import SeqIO #, SeqFeature
-import os, math, time #, re
+import os, math #, re
 import pandas as pd
+import createConfigs as Conf
 
 class Runs():
-    def __init__(self, binDir, RootDir, gbDir):
-        self.binDir = binDir
+    def __init__(self, RootDir, gbDir):
         self.RootDir = RootDir
         self.gbDir = gbDir
         self.dataDir = RootDir + "data/"
@@ -39,7 +39,7 @@ class Runs():
                 pos_end = feature.location.end
                 tmp_out = pd.Series(["chr1", pos_start, pos_end, locus_tag[0]])
                 if tmp_out[2] - tmp_out[1] > 20000:
-                    print("Error: the position of first gene is modified")
+                    print("The position of first gene is modified")
                     tmp_out[2] = tmp_out[1] + 100
                     
                 cdsL.append(tmp_out)
@@ -52,7 +52,9 @@ class Runs():
     
         newList.reverse()
         df[str(record.id)] = pd.Series(newList)
-        CircosIN.append(pd.DataFrame(cdsL))
+        output = pd.DataFrame(cdsL)
+        CircosIN.append(output)
+        output.to_csv(self.RootDir + "/circos/data/" + str(record.id) + ".original.txt", sep = "\t",header=None, index=None)
         return(df)    
     
     def calcEachConsensus(self, tmp): # それぞれのclusterごとに、consensusを計算、0-360と-180~180の両方。全て"-"の場合error.
@@ -130,7 +132,6 @@ class Runs():
     
     def AlignMinDeviation(self, df_cons):
         df_cons = df_cons.copy()
-        Loop = 1
         def calcRotate(df_cons,mins=0,maxs=360,step=10,strandON=1):
             Deviations = []
             Strand = []
@@ -161,10 +162,9 @@ class Runs():
                 print("col: " + col + ", strand: " + str(out_strand) + ", angle: " + str(out_angle))
             df_output = self.calcConsensus(df_cons)
             return(df_output, Deviations, Strand, Angle)
-        print("Start: " + str(Loop) + " Loop")
-        Loop += 1
+        print("\n First Alignment (rotaging by 10 degrees)\n")
         df1, tmpDev, tmpStr, tmpAng = calcRotate(df_cons)
-        print("Start: " + str(Loop) + " Loop")
+        print("\n Second Alignment (rotaging by 1 degree)\n")
         df2, tmpDev, tmpStr2, tmpAng2 = calcRotate(df1,-20,20,1,0)
         outAng = pd.Series(tmpAng) + pd.Series(tmpAng2)
         outAng[outAng > 360] -= 360
@@ -180,7 +180,7 @@ class Runs():
         df_key[df_key >= 360] -= 360
         df_key[df_key < 0] += 360
         return(df_key)
-    
+
     def rotatePosition(self, circosIN, info, consensus_gsize):
         out = circosIN.copy()
         ratio = consensus_gsize / info["Genome_size"]
@@ -207,76 +207,119 @@ class Runs():
         out[1] = out[1].astype(int)
         out[2] = out[2].astype(int)
         return(out)
-        
-        
+     
+    def AlignGsize(self, circosIN, info, consensus_gsize):
+        out = circosIN.copy()
+        ratio = consensus_gsize / info["Genome_size"]
+        out[1] = round(out[1] * ratio)
+        out[2] = round(out[2] * ratio)
+        out.ix[out[1] > out[2],2] = consensus_gsize
+        out[1] = out[1].astype(int)
+        out[2] = out[2].astype(int)
+        return(out)
+                
             
-    def makeConsensusDict(self, df):
+    def makeConsensusDict1(self, df):
         rows, cols = df.shape
         colname = df.columns
         Dict = {}
         
-        for col in colname[0:cols-1]:
+        for col in colname[0:cols-3]:
             tmp = df.ix[df[col] != "-",[col,"Consensus"]]
             tmp.index = tmp[col]
+            tmp=tmp.drop_duplicates([col]) # First duplicated value is remaining
+            Dict.update(tmp["Consensus"]) 
+        return(Dict)
+        
+    def makeConsensusDict2(self, df):
+        rows, cols = df.shape
+        colname = df.columns
+        Dict = {}
+        
+        for col in colname[0:cols-3]:
+            tmp = df.ix[df[col] != "-",[col,"Consensus"]]
+            tmp.index = tmp[col]
+            tmp=tmp[~tmp.duplicated([col])]  # Duplicated values are removed
             Dict.update(tmp["Consensus"])
         return(Dict)
             
     def convertTag2Color(self, circosIN, Dict):
         out = circosIN.copy()
         L = []
-        count = 0
+        count1 = 0
+        count2 = 0
         for tag in out[3]:
             if tag in Dict:
                 L.append("fill_color=hue{0:03d}".format(int(Dict[tag])))
+                count1 += 1
             else:
                 L.append("fill_color=white")
-                count += 1
-        out[3] = pd.Series(L)
-    
-    
-        return(out, count)
+                count2 += 1
+        out[3] = pd.Series(L)    
+        return(out, count1, count2)
                 
     def createCircosInput(self, df_tmp, name_key,consensus_gsize, CircosIN, df_info):
-        CircosIN_rotated = []
-        temp_dict = self.makeConsensusDict(df_tmp)
+        temp_dict = self.makeConsensusDict2(df_tmp)
+        each_file_info = []
         for Loop in range(0,self.num_col):
             tmp = CircosIN[Loop]
             info = df_info.ix[Loop]
             tmp = self.rotatePosition(tmp, info, consensus_gsize)
-            tmp, counter = self.convertTag2Color(tmp,temp_dict)
-            print (info[0] + " = start posi.: " + str(tmp[1].min()) + ",End posi.: " + str(tmp[2].max()) + ", Number of removal genes:" + str(counter))
+            tmp, cRemaining, cOmitted = self.convertTag2Color(tmp,temp_dict)
+            s = info[0] + ", start bp: " + str(tmp[1].min()) + ", End bp: " + str(tmp[2].max()) + ", Number of visualized genes: " + str(cRemaining) + ", Number of removal genes: " + str(cOmitted)
+            print(s)
+            each_file_info.append(s + "\n")
             file_name = self.CircosDir + "data/circos_" + name_key + "_" + info[0] +".txt"
-            CircosIN_rotated.append(tmp)
             tmp.to_csv(file_name, sep = "\t",header=None, index=None)
             Loop += 1
-    
+        
+        s = ''.join(each_file_info)
+        with open(self.RootDir + "circos_" + name_key + "_info.txt", 'w') as f:
+            f.write(s)
+    def createCircosInput2(self, df_tmp, name_key,consensus_gsize, CircosIN, df_info):
+        temp_dict = self.makeConsensusDict2(df_tmp)
+        each_file_info = []
+        for Loop in range(0,self.num_col):
+            tmp = CircosIN[Loop]
+            info = df_info.ix[Loop]
+            tmp = self.AlignGsize(tmp, info, consensus_gsize)
+            tmp, cRemaining, cOmitted = self.convertTag2Color(tmp,temp_dict)
+            s = info[0] + ", start bp: " + str(tmp[1].min()) + ", End bp: " + str(tmp[2].max()) + ", Number of visualized genes: " + str(cRemaining) + ", Number of removal genes: " + str(cOmitted)
+            print(s)
+            each_file_info.append(s + "\n")
+            file_name = self.CircosDir + "data/circos_" + name_key + "_" + info[0] +".txt"
+            tmp.to_csv(file_name, sep = "\t",header=None, index=None)
+            Loop += 1
+        
+        s = ''.join(each_file_info)
+        with open(self.RootDir + "circos_" + name_key + "_info.txt", 'w') as f:
+            f.write(s)
+
+             
     def createCircosConf(self, sort_key, name_key, df_info, out = "circos.conf"):
-        Acc_sorted = df_info.sort_values(by=[sort_key], ascending=False).ix[:,0]
+        df_info_sorted = df_info.sort_values(by=[sort_key], ascending=False)
+        Acc_sorted = df_info_sorted.ix[:,0]
         Count, = Acc_sorted.shape
-        step = 0.9/Count
+        step = round(0.9/Count,2)
         r1 = 0.99
         r0 = 0.99 - step
-        f = open(self.binDir+"circosConf_head.txt")
-        head = f.read()
-        f.close
+        head = Conf.header
         output = []
         output.append(head)
         for acc in Acc_sorted:
             s = "<highlight>\nfile = data/circos_" + name_key + "_" + acc + ".txt\nr1 = " + str(r1) + "r\nr0 = " + str(r0) + "r\n</highlight>\n"         
             output.append(s)
             r1 = r0
-            r0 = r1 - step
-        f2 = open(self.binDir+"circosConf_tail.txt")
-        tail = f2.read()
-        f2.close()
+            r0 = round(r1 - step,2)
+        tail = Conf.tail
         output.append(tail)
         output_write = ''.join(output)
-            
+                    
+        f = open(self.CircosDir  + out, 'w')
+        f.write(output_write)
+        f.close
+        df_info_sorted.to_csv(self.RootDir + "RingOrder_" + name_key + "_df.tsv", sep = "\t", index = None)      
         
-        f3 = open(self.CircosDir  + out, 'w')
-        f3.write(output_write)
-        f3.close
-    
     def createKaryotype(self, max):
         st = []
         st.append("chr\t-\tchr1\tchr1\t0\t"+ str(int(max)) + "\thue000\n")
@@ -290,19 +333,21 @@ class Runs():
         s = ''.join(st)
         with open(self.CircosDir + "data/karyotype.txt", 'w') as f:
             f.write(s) 
-        
-def runs(df, timeRecorder, binDir, RootDir, gbDir):
-    run = Runs(binDir, RootDir, gbDir)
+
+
+def runs(df, timeRecorder, RootDir, gbDir):
+    run = Runs(RootDir, gbDir)
     df_num = df.copy()
     files = os.listdir(gbDir)
 
     genome_size = []
     CircosIN = []
     LoopCounter = 1
-    print (len([file for file in files if file.endswith(".gb")]))
+    NumGB = len([file for file in files if file.endswith(".gb")])
+    print ("Number of GenBank files:", NumGB)
     for file in files:
         if file.endswith(".gb"): 
-            print(str(LoopCounter) + "..."),
+            print("Reading: " + file + "  "+ str(LoopCounter) + "/" + str(NumGB)),
             LoopCounter += 1
             df_num = run.readGB(gbDir + file, genome_size, CircosIN, df_num)
 
@@ -313,36 +358,53 @@ def runs(df, timeRecorder, binDir, RootDir, gbDir):
     AccNo = list(cols[0:num_col])
     df_cons = run.calcConsensus(df_num)
     Dev_original = run.calcDeviations(df_cons)
-    df_cons2, Dev, Strand, Angle = run.AlignMinDeviation(df_cons)    
-    df_cons2.to_csv(RootDir + "data/output_consensus.tsv", sep = "\t")
+    df_cons2, Dev, Strand, Angle = run.AlignMinDeviation(df_cons)
+    df_cons.to_csv(RootDir + "data/output_unaligned_consensus.tsv", sep = "\t")    
+    df_cons2.to_csv(RootDir + "data/output_aligned_consensus.tsv", sep = "\t")
         
     consensus_gsize = round(np.mean(genome_size))
     run.createKaryotype(consensus_gsize)
     df_info = pd.concat([pd.Series(AccNo),pd.Series(genome_size),pd.Series(Strand),Angle,pd.Series(Dev), pd.Series(Dev_original)], axis = 1)
     df_info.columns = ["AccNo", "Genome_size", "Strand", "Angle", "Deviation (Aligned)", "Deviation (Original)"]
-    df_info.to_csv(RootDir + "data/output_information.tsv", sep = "\t", index=None)
-    df_locusTag_aligned = pd.concat([df, df_cons2["Consensus"]], axis = 1)
-    df_locusTag = pd.concat([df, df_cons["Consensus"]], axis = 1)
-
+    df_info.to_csv(RootDir + "data/output_information.tsv", sep = "\t", index = None)
+    df_locusTag = pd.concat([df, df_cons[["Consensus", "Std", "Count"]]], axis = 1)
+    df_locusTag_aligned = pd.concat([df, df_cons2[["Consensus", "Std", "Count"]]], axis = 1)
+    df_locusTag.to_csv(RootDir + "data/locusTag_unaligned_angle.tsv", sep = "\t", index = None)
+    df_locusTag_aligned.to_csv(RootDir + "data/locusTag_aligned_angle.tsv", sep = "\t", index = None)
+    df_locusTag_aligned_core = df_locusTag_aligned[df_locusTag_aligned["Count"]==num_col]
+    df_locusTag_aligned_core.to_csv(RootDir + "data/locusTag_aligned_angle_coreGenes.tsv", sep = "\t", index = None)
+    
     os.chdir(RootDir + "circos/")
-    run.createCircosInput(df_locusTag, "unaligned", consensus_gsize, CircosIN, df_info)
+    print("\n\nCreate Circos input (./circos/data/).")
+    run.createCircosInput2(df_locusTag, "unaligned", consensus_gsize, CircosIN, df_info)
     run.createCircosConf("Deviation (Original)", "unaligned", df_info)
+    print("Run circos for unaligned dataset.")
     os.system('circos')     
     os.system('mv circos.png ../circos_unaligned.png')
+    print("Output circos_unaligned.png, circos_unaligned_info.txt, and RingOrder_unaligned_df.tsv")
+    
+    print("\nCreate Circos input (./circos/data/).")
     run.createCircosInput(df_locusTag_aligned, "aligned", consensus_gsize, CircosIN, df_info)
     run.createCircosConf("Deviation (Aligned)", "aligned", df_info)
+    print("Run circos for aligned dataset")
     os.system('circos')     
     os.system('mv circos.png ../circos_aligned.png')
+    print("Output circos_aligned.png, circos_aligned_info.txt, and RingOrder_aligned_df.tsv")
 
-    os.chdir(RootDir + "circos/")
-    os.system('circos') 
-if __name__ == '__main__':
+    print("\nCreate Circos input (./circos/data/).")
+    run.createCircosInput(df_locusTag_aligned, "aligned_UnalignedRingOrder", consensus_gsize, CircosIN, df_info)
+    run.createCircosConf("Deviation (Original)", "aligned_UnalignedRingOrder", df_info)
+    print("Run circos for aligned dataset (Unaligned ring order)")
+    os.system('circos')     
+    os.system('mv circos.png ../circos_aligned_UnalignedRingOrder.png')
+    print("Output circos_aligned_UnalignedRingOrder.png, circos_aligned_UnalignedRingOrder_info.txt, and RingOrder_aligned_UnalignedOrder_df.tsv")
 
-    timeRecorder = []
-    binDir = "/Users/tipputa/Google/1_study/spyder/bin/"
-    RootDir = "/Users/tipputa/Google/1_study/1_circos_for_paper/circos_testcase/170105_Hpylori_allPython/"
-  #  gbDir = "/Users/tipputa/Google/1_study/1_circos_for_paper/circos_testcase/160422_Hpylori_all/gb/"
-    gbDir = "/Users/tipputa/Google/1_study/1_circos_for_paper/circos_testcase/170105_Hpylori_allPython/gb/"
-   # df = pd.read_csv(RootDir + '/data/input_rmDup.tsv', delimiter = "\t")
-    df = pd.read_csv("/Users/tipputa/Google/1_study/spyder/input.tsv", delimiter = "\t")
-    runs(df, timeRecorder, binDir, RootDir, gbDir)
+    print("\nCreate Circos input (./circos/data/).")
+    run.createCircosInput(df_locusTag_aligned_core, "aligned_core", consensus_gsize, CircosIN, df_info)
+    run.createCircosConf("Deviation (Aligned)", "aligned_core", df_info)
+    print("Run circos for aligned core gene dataset")
+    os.system('circos')     
+    os.system('mv circos.png ../circos_aligned_core.png')
+    print("Output circos_aligned_core.png, circos_aligned_core_info.txt, and RingOrder_aligned_core_df.tsv")
+
+    
