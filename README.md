@@ -6,8 +6,6 @@ Input: GenBank files (.gb)
 Usage: 
 ```sh
 python runAllProcess.py <output directory> <input directory (GenBank files)>
-python runAfterBlastProcess.py <output directory> <input directory (GenBank files)>
-python runVisualize.py  <output directory> <data info file> <option; key word for output; default:"test"> <option; the minimum number of genes in each cluster; default: 1> <option; sorting column name; default: None>
 ```
 
 ## Requirements
@@ -17,7 +15,7 @@ python runVisualize.py  <output directory> <data info file> <option; key word fo
    - `pandas`, `numpy`, `biopython`, `tqdm`	
  
 #### PATH
-You need to add the blast+/bin and the circus/bin to your PATH.
+You need to add the blast+/bin and the circos/bin to your PATH.
 Please check below.
 ```sh
 echo $PATH
@@ -123,8 +121,8 @@ python ~/Circular-genome-visualizer/bin/runAllProcess.py ~/Circular-genome-visua
 
 
 #### RunVisualize. Changing the visualization settings.
-We can change the setting file.
-In this test case, we can use "changed_setting.tsv" file (first row was deleted from test/data/RingOrder_aligned_df.tsv).
+You can change the setting file.
+In this test case, you can use "changed_setting.tsv" file (first row was deleted from /test/data/RingOrder_aligned_df.tsv).
 ```sh
 python ~/Circular-genome-visualizer/bin/runVisualize.py ~/Circular-genome-visualizer/test/ ~/Circular-genome-visualizer/test/changed_setting.tsv "rm1genome" 4
 ```
