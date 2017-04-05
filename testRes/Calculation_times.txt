@@ -1,0 +1,4 @@
+Elapsed_time (Before BLAST):2.6[sec]
+Elapsed_time (BLASTexecute):7.5[min]
+Elapsed_time (Making BLAST result tables):9.0[sec]
+Elapsed_time (All process):9.2[min]
