@@ -42,14 +42,11 @@ if __name__ == '__main__':
         RootDir = sys.argv[1] + "/"
         gbDir = sys.argv[2] + "/"
         
-    else:
-        RootDir = '/Users/tipputa/Google/1_study/1_circos_for_paper/circos_testcase/170404_python_check/gb3/'
-        gbDir =  RootDir + 'gb/'
+    else:        
+        print(useage)
+        quit()
         
- #       print(useage)
-  #      quit()
-        
-    createOrtho.runsWOblast(timeRecorder, RootDir, gbDir)
+    createOrtho.runs(timeRecorder, RootDir, gbDir)
     df = pd.read_csv(RootDir + '/data/all_blast_results.tsv', delimiter = "\t")
     createCircos.runs(df, timeRecorder, RootDir, gbDir)
     recordAll.fin("All process", timeRecorder)
