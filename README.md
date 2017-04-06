@@ -110,7 +110,7 @@ You can edit the visualization result, such as the number of genomes and the rin
 ## Test run
 #### Test data: 5 Helicobacter pylori genomes
 #### all processes
-It takes 10 minutes (BLASTP 8 min, other 2 min) on a standalone desktop server of 32GB memory.
+It takes 10 minutes (BLASTP 8 min, other 2 min) on a standalone desktop server of 16GB memory.
 ```sh
 cd
 git clone git@github.com:tipputa/Circular-genome-visualizer.git
