@@ -30,7 +30,7 @@ useage = """
 Error: please input results and genbank directories.
 
 Usage: 
-   python runAllProcess.py <output directory> <input directory (GenBank files)>
+   python runAfterBlastProcess.py <output directory> <input directory (GenBank files)>
    e.g: python runAllProcess.py ~/test/ ~/test/gb/
 """
 
