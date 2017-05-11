@@ -8,7 +8,6 @@ Created on Fri Jan  6 11:20:44 2017
 
 import pandas as pd
 import sys, time
-import createOrthologousGenes as createOrtho
 import createCircos as createCircos
 
 class timeRecord():
@@ -30,8 +29,8 @@ useage = """
 Error: please input results and genbank directories.
 
 Usage: 
-   python runAllProcess.py <output directory> <input directory (GenBank files)> <path to the cluster file>
-   e.g: python runAllProcess.py ~/test/ ~/test/gb/ ~/test/data/all_blast_results.txt
+   python runOriginalClusterFile.py <output directory> <input directory (GenBank files)> <path to the cluster file>
+   e.g: runOriginalClusterFile.py ~/test/ ~/test/gb/ ~/test/data/all_blast_results.txt
 """
 
 if __name__ == '__main__':
