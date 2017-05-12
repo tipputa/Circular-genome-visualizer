@@ -5,7 +5,6 @@ Created on Tue Apr  4 19:00:27 2017
 @author: ac144809
 """
 
-import sys,os
 import pandas as pd
 import createConfigs as Conf
 
@@ -63,24 +62,32 @@ def convertTag2Color(circosIN, Dict):
     return(out, count)
             
 def createCircosInput(RootDir, df_tmp, consensus_gsize, CircosIN, df_info, name_key = "test"):
+    createKaryotype(consensus_gsize, RootDir)
     temp_dict = makeConsensusDict(df_tmp)
     nrow, ncol = df_info.shape
+    each_file_info = []
     for Loop in range(0,nrow):
         tmp = CircosIN[Loop]
         info = df_info.ix[Loop]
         tmp = rotatePosition(tmp, info, consensus_gsize)
         tmp, counter = convertTag2Color(tmp,temp_dict)
-        print (info[0] + " = start posi.: " + str(tmp[1].min()) + ",End posi.: " + str(tmp[2].max()) + ", Number of removal genes:" + str(counter))
+        s = info[0] + " = Start position: " + str(tmp[1].min()) + ", End position: " + str(tmp[2].max()) + ", Number of removed genes:" + str(counter)
+        print(s)
+        each_file_info.append(s+"\n")
         file_name = RootDir + "circos/data/circos_" + name_key + "_" + info[0] +".txt"
         tmp.to_csv(file_name, sep = "\t",header=None, index=None)
         Loop += 1
+ 
+        s = ''.join(each_file_info)
+        with open(RootDir + "circos_" + name_key + "_info.txt", 'w') as f:
+            f.write(s)
 
 def createCircosConf(RootDir, df_info, sort_key = None, name_key = "test", out = "circos.conf"):
     if sort_key is None:
         df_info_sorted = df_info
     else:
         df_info_sorted = df_info.sort_values(by=[sort_key], ascending=False)
-        
+
     Acc_sorted = df_info_sorted.ix[:,0]
     Count, = Acc_sorted.shape
     step = round(0.9/Count,2)
@@ -97,10 +104,8 @@ def createCircosConf(RootDir, df_info, sort_key = None, name_key = "test", out =
     tail = Conf.tail
     output.append(tail)
     output_write = ''.join(output)
-                
-    f = open(RootDir + "/circos/" + out, 'w')
-    f.write(output_write)
-    f.close
+    with open(RootDir + "/circos/" + out, 'w') as f:
+        f.write(output_write)                
     df_info_sorted.to_csv(RootDir + "RingOrder_" + name_key + "_df.tsv", sep = "\t", index = None)      
     
 def createKaryotype(Gsize, RootDir):
@@ -128,4 +133,3 @@ def readInfo(RootDir, df_name, CircosIN, minCount = None):
         tmp = pd.read_csv(RootDir + "/circos/data/" + acc + ".original.txt", header = None,delimiter = "\t")
         CircosIN.append(tmp)
     return(df_info, df_locusTag, consensus_genomesize)
-

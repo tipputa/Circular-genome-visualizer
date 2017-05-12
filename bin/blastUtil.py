@@ -5,17 +5,14 @@
 # import searchAccesion
 
 from Bio.Blast.Applications import NcbiblastxCommandline
-import os.path
 import os
 
 
-#BLASTPATH = "Please change your blast path"
 
-
-def createDB(fastaFileName, dbFileName, dbType="prot"):
+def createDB(fastaFileName, dbFileName, logName, dbType="prot"):
     toolPath = "makeblastdb"
     command = " ".join(
-        [toolPath, "-in", fastaFileName, "-dbtype", dbType, "-out", dbFileName])
+        [toolPath, "-in", fastaFileName, "-dbtype", dbType, "-out", dbFileName, "-logfile", logName])
     os.system(command)
 
 
@@ -24,15 +21,5 @@ def blastp(queryFileName, dbFileName, outFileName):
                                     cmd="blastp", evalue=0.001, outfmt=5, num_alignments=1)
     stdout, stderr = comline()
     return stdout, stderr
-
-
-if __name__ == '__main__':
-
-    queryFileName="../t2/protein.fa"
-    dbFileName="db/p"
-    outFileName="res/result.xml"
-
-    createDB(queryFileName, dbFileName)
-    stdout, stderr = blastp(queryFileName, dbFileName, outFileName)
 
 

@@ -6,82 +6,17 @@ Created on Fri Jan  6 11:20:44 2017
 @author: tipputa
 """
 
-from Bio import SeqIO #, SeqFeature
-import os, time, csv #, re
+from Bio import SeqIO
+import os, time
 import pandas as pd
-import blastUtil
-import blast2tsv, createTable2
+import blastUtil, blast2tsv, createTable2
 from tqdm import tqdm
+import timeRecord as recorder
+import gbParser as parser
 
-def mkdir(dirName):
-    if not os.path.exists(dirName):
-        os.makedirs(dirName)
-    if not os.path.isdir(dirName):
-        print("Dir name \"",dirName,"\" can't be used. Please check file names.\n")
-        raise IOError
-
-def locationToStr(locationObj):
-    start = locationObj.start + 1
-    end = locationObj.end
-    before = "<" if "<" in str(locationObj.start) else ""
-    after = ">" if ">" in str(locationObj.end) else ""
-
-    if locationObj.strand == 1:
-        return "%s%d..%s%d" % (before, start, after, end)
-    elif locationObj.strand == -1:
-        return "complement(%s%d..%s%d)" % (before, start, after, end)
-    
-def parseFeature(feature, num):
-    locus_tag = feature.qualifiers.get("locus_tag", ["locus_" + str(num)])[0]
-    location = locationToStr(feature.location)
-    product = feature.qualifiers.get("product", ["product_" + str(num)])[0]
-    function = feature.qualifiers.get("function", [""])[0]
-    translation = feature.qualifiers.get("translation", [""])[0]
-    return locus_tag, location, product, function, translation
-                
-def createProteinFasta(record, proteinFileName):
-    num = 0
-    with open(proteinFileName, "w") as f:
-        for feature in record.features:
-            num += 1
-            if "translation" in feature.qualifiers.keys():
-                locus_tag, location, product, function, translation = parseFeature(
-                    feature, num)
-                f.write(">%s %s %s\n" %
-                    (locus_tag, product, record.name + ":" + location))
-                f.write(feature.qualifiers["translation"][0] + "\n")
-                
-def createTSV(record, tsvFileName):
-    csvWriter = csv.writer(
-        open(tsvFileName, "w"), lineterminator="\n", delimiter='\t')
-    Buffer = [("LocusTag", "sequence", "location",  "feature",
-               "product", "function", "translation")]
-    num = 0
-    for feature in record.features:
-        num += 1
-        if feature.type in ["CDS", "rRNA", "tRNA"]:
-            locus_tag, location, product, function, translation = parseFeature(feature, num)
-            Buffer.append((locus_tag, record.name, location,
-                               feature.type, product, function, translation))
-    csvWriter.writerows(Buffer)
-
-class timeRecord():
-    start = time.time()
-    def fin(self,str,timeRecorder):
-        elapsed_time = round(time.time() - self.start,1)
-        if elapsed_time > 60:
-            elapsed_time_min = round(elapsed_time/60,1)
-            timeRecordS = "Elapsed_time (" + str + "):{0}".format(elapsed_time_min) + "[min]"
-        else:
-            timeRecordS = "Elapsed_time (" + str + "):{0}".format(elapsed_time) + "[sec]"
-
-        print("\n" + timeRecordS + "\n")
-        timeRecorder.append(timeRecordS)
-        self.start = time.time()
-  
 class Run():
     def __init__(self, RootDir, gbDir):
-        print("\nSetting:\n  Root directory: %s,\n  GenBank directory: %s\n\n" % (RootDir, gbDir))
+        print("\nSetting:\n  Output directory: %s,\n  GenBank directory: %s\n\n" % (RootDir, gbDir))
         self.RootDir = RootDir
         self.gbDir = gbDir
         self.dataDir = RootDir + "data/"
@@ -89,7 +24,15 @@ class Run():
         self.blastDBDir = self.dataDir + "BlastDB/"
         self.summaryDir = self.dataDir + "summary/"
         self.blastResultDir = self.dataDir + "BlastResult/"    
-        self.proteinFasDir = self.dataDir + "ProteinFasta/"    
+        self.proteinFasDir = self.dataDir + "ProteinFasta/" 
+
+        def mkdir(dirName):
+            if not os.path.exists(dirName):
+                os.makedirs(dirName)
+            if not os.path.isdir(dirName):
+                print("Dir name \"",dirName,"\" can't be used. Please check file names.\n")
+                raise IOError
+
         mkdir(self.dataDir)
         mkdir(self.CircosDir)
         mkdir(self.CircosDir + "data")
@@ -97,19 +40,57 @@ class Run():
         mkdir(self.blastResultDir)        
         mkdir(self.proteinFasDir)
         mkdir(self.summaryDir)
+         
+    def makeBlastDB(self,gbDir): # for runs
+        def makeblastdb(record, id="."):
+            proteinFileName = self.proteinFasDir + id + ".fa"
+            summaryName = self.summaryDir + id + ".tsv"
+            parser.createProteinFasta(record, proteinFileName)
+            parser.createTSV(record, summaryName)
+        
+            blastUtil.createDB(
+                proteinFileName, self.blastDBDir + id + ".fa", self.blastDBDir + id + ".txt" ,dbType="prot")
+
+        fileNames = []
+        acc = []
+        LoopCounter = 1
+        files = os.listdir(gbDir)
+ 
+        NumGB = len([file for file in files if file.endswith(".gb")  or file.endswith('.gbk')])
+        print ("Number of GenBank files:", NumGB)
+        for file in files:
+            if file.endswith(".gb") or file.endswith('.gbk'): 
+                record = SeqIO.read(gbDir + file, "genbank")
+                print("Reading: " + file + " (" + record.id + ")  "+ str(LoopCounter) + "/" + str(NumGB)),
+                LoopCounter += 1
+                s = gbDir + file + "\t" + record.id + "\n"
+                fileNames.append(s)            
+                acc.append(record.id)
+                makeblastdb(record, record.id)
+        return(acc, fileNames)
+ 
+
+    def makeAccList(self,gbDir): # for runsWOblast
+        acc = []
+        LoopCounter = 1    
+        files = os.listdir(gbDir)
+
+        NumGB = len([file for file in files if file.endswith(".gb")  or file.endswith('.gbk')])
+        print ("Number of GenBank files:", NumGB)
+        for file in files:
+            if file.endswith(".gb") or file.endswith('.gbk'): 
+                record = SeqIO.read(gbDir + file, "genbank")
+                print("Reading: " + file + " (" + record.id + ")  "+ str(LoopCounter) + "/" + str(NumGB)),
+                LoopCounter += 1
+                acc.append(record.id)
+        return(acc)
       
-    def makeblastdb(self, record, id="."):
-        proteinFileName = self.proteinFasDir + id + ".fa"
-        summaryName = self.summaryDir + id + ".tsv"
-        createProteinFasta(record, proteinFileName)
-        createTSV(record, summaryName)
     
-        blastUtil.createDB(
-            proteinFileName, self.blastDBDir + id + ".fa", dbType="prot")
-    
-    def blastall(self,list):
+    def blastall(self, list):
         max = len(list) ** 2 
         print("Excute Protein Blast (" + str(max) + " patterns)")
+
+        time.sleep(1)
         pbar = tqdm(total=max)
         for id in list:
             for id2 in list:
@@ -128,7 +109,7 @@ class Run():
                 outputFile = self.blastResultDir + id + "vs" + id2 + ".tsv"
                 blast2tsv.main(forwardResult, reverseResult, targetSummary, outputFile)
     
-    def cTable(self,pivot, targetList):
+    def cTable(self, pivot, targetList):
         filterFunc = createTable2.createFilterFunction(score=0, identity=30, similarity=0, Qcoverage=0, Tcoverage=0, BBH=True)
         D = createTable2.createTable(self.blastResultDir,pivot, targetList)
         D.applymap(filterFunc)
@@ -136,8 +117,8 @@ class Run():
         DL.to_csv(self.blastResultDir + pivot + "_locusTag.tsv", sep="\t", na_rep='-',index= None)
         return(DL)
         
-    def makeTable(self,acc):
-        a_str = map(str,acc)
+    def makeTable(self, acc):
+        a_str = map(str, acc)
         accs = ",".join(a_str)
         dfs = []
         for id in acc:
@@ -165,71 +146,39 @@ class Run():
             sum=0    
         df = df.drop(tag)
         return(df)
-         
-    def makeBlastDB(self,gbDir):
-        fileNames = []
-        acc = []
-        LoopCounter = 1
-    
-        files = os.listdir(gbDir)
-        print ("Number of GenBank files:", len([file for file in files if file.endswith(".gb")]))
-        for file in files:
-            if file.endswith(".gb"): 
-                record = SeqIO.read(gbDir + file, "genbank")
-                print(str(LoopCounter),":", record.id)            
-                LoopCounter += 1
-                s = gbDir + file + "\t" + record.id + "\n"
-                fileNames.append(s)            
-                acc.append(record.id)
-                self.makeblastdb(record, record.id)
-        return(acc, fileNames)
 
-    def makeAccList(self,gbDir):
-        acc = []
-        LoopCounter = 1
-    
-        files = os.listdir(gbDir)
-        print ("Number of GenBank files:", len([file for file in files if file.endswith(".gb")]))
-        for file in files:
-            if file.endswith(".gb"): 
-                record = SeqIO.read(gbDir + file, "genbank")
-                print(str(LoopCounter),":", record.id)            
-                LoopCounter += 1
-                acc.append(record.id)
-        return(acc)
- 
  
 def runs(timeRecorder, RootDir, gbDir):
-    rec = timeRecord()        
+    rec = recorder.timeRecord()        
     run = Run(RootDir, gbDir)
-    print(" Creating BLASTDB and proteinFasta\n\n")
+    print("1. Creating BLASTDB and proteinFasta\n")
     acc, fileNames = run.makeBlastDB(gbDir)
     output = ''.join(fileNames)
     with open(run.RootDir + "Input_GBs.txt", 'w') as f:
         f.write(output)
     rec.fin("Before BLAST", timeRecorder)
-    print("\n Running BLAST\n")
+    print("\n2. Running BLAST\n")
     run.blastall(acc)
     rec.fin("BLASTexecute", timeRecorder)
 
-    print("\n  Parsing BLAST output\n")
+    print("\n3. Parsing BLAST output\n")
     dfs=run.makeTable(acc)
     dfs.to_csv(run.dataDir + "all_blast_results.tsv", sep = "\t", index = None)
-    print("Output blast result table (./data/all_blast_results.tsv)\n")
+    print("Output blast result table (" + RootDir + "data/all_blast_results.tsv)")
     rec.fin("Making BLAST result tables", timeRecorder)
 
-    return(dfs)
 
 def runsWOblast(timeRecorder, RootDir, gbDir):
-    rec = timeRecord()        
+    rec = recorder.timeRecord()        
     run = Run(RootDir, gbDir)
+    print("1. Skip: Creating BLASTDB and proteinFasta\n")
+    print("2. Reading .gb files; Skip: Running BLAST\n")
     acc = run.makeAccList(gbDir)
-    print("\n  Parsing BLAST output\n")
+    print("\n3. Parsing BLAST output\n")
     dfs=run.makeTable(acc)
     dfs.to_csv(run.dataDir + "all_blast_results.tsv", sep = "\t", index = None)
-    print("Output blast result table (./data/all_blast_results.tsv)\n")
+    print("Output blast result table (" + RootDir + "data/all_blast_results.tsv)")
     rec.fin("Making BLAST result tables", timeRecorder)
 
-    return(dfs)
 
     
