@@ -9,12 +9,16 @@ import pandas as pd
 import createConfigs as Conf
 
 
-def rotatePosition(circosIN, info, consensus_gsize):
+def rotatePosition(circosIN, info, consensus_gsize, isRotate = True):
     out = circosIN.copy()
     ratio = consensus_gsize / info["Genome_size"]
     step_size = round(consensus_gsize / 360)
     out[1] = round(out[1] * ratio)
     out[2] = round(out[2] * ratio)
+    if not isRotate:
+       out[1] = out[1].astype(int)
+       out[2] = out[2].astype(int)
+       return(out)
     tmp = out[1].copy()
     if info["Strand"] == 0:
         if info["Angle"] != 0:
@@ -61,7 +65,7 @@ def convertTag2Color(circosIN, Dict):
     out[3] = pd.Series(L)    
     return(out, count)
             
-def createCircosInput(RootDir, df_tmp, consensus_gsize, CircosIN, df_info, name_key = "test"):
+def createCircosInput(RootDir, df_tmp, consensus_gsize, CircosIN, df_info, name_key = "test", isRotate = True):
     createKaryotype(consensus_gsize, RootDir)
     temp_dict = makeConsensusDict(df_tmp)
     nrow, ncol = df_info.shape
@@ -69,7 +73,7 @@ def createCircosInput(RootDir, df_tmp, consensus_gsize, CircosIN, df_info, name_
     for Loop in range(0,nrow):
         tmp = CircosIN[Loop]
         info = df_info.ix[Loop]
-        tmp = rotatePosition(tmp, info, consensus_gsize)
+        tmp = rotatePosition(tmp, info, consensus_gsize, isRotate)
         tmp, counter = convertTag2Color(tmp,temp_dict)
         s = info[0] + " = Start position: " + str(tmp[1].min()) + ", End position: " + str(tmp[2].max()) + ", Number of removed genes:" + str(counter)
         print(s)

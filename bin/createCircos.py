@@ -232,9 +232,9 @@ def runs(df, timeRecorder, RootDir, gbDir):
     print ("8. Running circos\n")
     os.chdir(RootDir)
     
-    def visualize(dfs, sort_key, tag):        
+    def visualize(dfs, sort_key, tag, df_info, isRotate = True):        
         print("Creating circos input (" + RootDir + "./circos/data/circos_" + tag + "_*.txt)")
-        visualizer.createCircosInput(RootDir, dfs, consensus_gsize, CircosIN, df_info, tag)
+        visualizer.createCircosInput(RootDir, dfs, consensus_gsize, CircosIN, df_info, tag, isRotate)                      
         visualizer.createCircosConf(RootDir, df_info, sort_key, tag)
         print("Run circos; suffix: "  + tag )
         os.system('circos -conf '+ RootDir +'circos/circos.conf -silent')
@@ -242,9 +242,9 @@ def runs(df, timeRecorder, RootDir, gbDir):
         os.system("rm circos.svg")
         print("Output circos_" + tag + ".png, circos_" + tag + "_info.txt, and RingOrder_" + tag + "_df.tsv\n")
 
-    visualize(df_locusTag, "Deviation (Original)", "unaligned")
-    visualize(df_locusTag_aligned, "Deviation (Aligned)", "aligned")
-    visualize(df_locusTag_aligned, "Deviation (Original)", "aligned_UnalignedRingOrder")
-    visualize(df_locusTag_aligned_core, "Deviation (Aligned)", "aligned_core")
+    visualize(df_locusTag, "Deviation (Original)", "unaligned", df_info, False)
+    visualize(df_locusTag_aligned, "Deviation (Aligned)", "aligned", df_info)
+    visualize(df_locusTag_aligned, "Deviation (Original)", "aligned_UnalignedRingOrder", df_info)
+    visualize(df_locusTag_aligned_core, "Deviation (Aligned)", "aligned_core", df_info)
 
     rec.fin("Running Circos", timeRecorder)
