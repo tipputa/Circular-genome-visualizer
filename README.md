@@ -43,6 +43,19 @@ Two required arguments are as follows:
 <li> path to the directory containing GenBank files (.gb) </li>
 </ol>
 
+#### Run singularity blastp, qsub jobs (for NIG supercomputer system)
+```sh
+module load singularity
+python runOnlyBlast.py <output directory> <input directory (GenBank files)> <bin_singularity directory>
+```
+Three required arguments are as follows:
+<ol>
+<li> path to the output directory </li>
+<li> path to the directory containing GenBank files (.gb) </li>
+<li> path to the bin_singularity directory </li>
+</ol>
+Please run runAfterBlastProcesses.py explained above after finished all qsub jobs.
+
 #### Run visualization
 ```sh
 python runVisualize.py  <output directory> <configuration file> <option; key word for output; default:"test"> <option; the minimum number of genes in each cluster; default: 1> <option; sorting column name; default: None>
