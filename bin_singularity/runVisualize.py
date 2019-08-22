@@ -25,7 +25,7 @@ if __name__ == '__main__':
         RootDir = sys.argv[1] + "/"
         df_name = sys.argv[2]
         tag = sys.argv[3]
-        min_genes = [4]
+        min_genes = sys.argv[4]
         sort_key = None
     elif args == 4:
         RootDir = sys.argv[1] + "/"
@@ -49,10 +49,10 @@ if __name__ == '__main__':
 
     def visualize(dfs, sort_key, tag):        
         print("\nCreate Circos input (" + RootDir + "./circos/data/circos_" + tag + "_*.txt)")
-        visualizer.createCircosInput(RootDir, dfs, consensus_gsize, CircosIN, df_info, "unaligned")
-        visualizer.createCircosConf(RootDir, df_info, "Deviation (Original)", "unaligned")
+        visualizer.createCircosInput(RootDir, dfs, consensus_gsize, CircosIN, df_info, tag)
+        visualizer.createCircosConf(RootDir, df_info, sort_key, tag)
         print("circos suffix: "  + tag )
-        os.system('circos -conf '+ RootDir +'circos/circos.conf')
+        os.system('singularity exec /usr/local/biotools/c/circos\:0.69.2--0 circos -conf '+ RootDir +'circos/circos.conf')
         os.system("mv circos.png " + RootDir + "circos_" + tag + ".png")
         os.system("rm circos.svg")
         print("Output circos_" + tag + ".png, circos_" + tag + "_info.txt, and RingOrder_" + tag + "_df.tsv\n")

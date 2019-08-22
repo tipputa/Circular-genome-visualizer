@@ -3,7 +3,7 @@
 #$ -pe def_slot 1 
 #$ -o /dev/null
 #$ -e /dev/null
-#$ -pe def_slot 1
+#$ -pe def_slot 4
 
 binDir=$1
 targetId=$2
@@ -11,7 +11,7 @@ FastaDir=$3
 DBDir=$4
 OutputDir=$5
 AllInput=$6
-NSLOTS=1
+NSLOTS=4
 
 module load singularity
 

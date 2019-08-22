@@ -1,0 +1,174 @@
+perl: warning: Setting locale failed.
+perl: warning: Please check that your locale settings:
+	LANGUAGE = (unset),
+	LC_ALL = (unset),
+	LANG = "en_US.UTF-8"
+    are supported and installed on your system.
+perl: warning: Falling back to the standard locale ("C").
+mv: cannot stat ‘circos.png’: No such file or directory
+rm: cannot remove ‘circos.svg’: No such file or directory
+perl: warning: Setting locale failed.
+perl: warning: Please check that your locale settings:
+	LANGUAGE = (unset),
+	LC_ALL = (unset),
+	LANG = "en_US.UTF-8"
+    are supported and installed on your system.
+perl: warning: Falling back to the standard locale ("C").
+mv: cannot stat ‘circos.png’: No such file or directory
+rm: cannot remove ‘circos.svg’: No such file or directory
+perl: warning: Setting locale failed.
+perl: warning: Please check that your locale settings:
+	LANGUAGE = (unset),
+	LC_ALL = (unset),
+	LANG = "en_US.UTF-8"
+    are supported and installed on your system.
+perl: warning: Falling back to the standard locale ("C").
+mv: cannot stat ‘circos.png’: No such file or directory
+rm: cannot remove ‘circos.svg’: No such file or directory
+perl: warning: Setting locale failed.
+perl: warning: Please check that your locale settings:
+	LANGUAGE = (unset),
+	LC_ALL = (unset),
+	LANG = "en_US.UTF-8"
+    are supported and installed on your system.
+perl: warning: Falling back to the standard locale ("C").
+mv: cannot stat ‘circos.png’: No such file or directory
+rm: cannot remove ‘circos.svg’: No such file or directory
+/lustre7/home/lustre4/ac144809/study/Circular-genome-visualizer/bin_singularity/createOrthologousGenes.py:147: FutureWarning: 
+.ix is deprecated. Please use
+.loc for label based indexing or
+.iloc for positional indexing
+
+See the documentation here:
+http://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#ix-indexer-is-deprecated
+  if not df.ix[i,j] == "-":
+/lustre7/home/lustre4/ac144809/tool/py37/lib/python3.7/site-packages/pandas/core/indexing.py:947: FutureWarning: 
+.ix is deprecated. Please use
+.loc for label based indexing or
+.iloc for positional indexing
+
+See the documentation here:
+http://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#ix-indexer-is-deprecated
+  return getattr(section, self.name)[new_key]
+/lustre7/home/lustre4/ac144809/study/Circular-genome-visualizer/bin_singularity/createCircos.py:108: FutureWarning: 
+.ix is deprecated. Please use
+.loc for label based indexing or
+.iloc for positional indexing
+
+See the documentation here:
+http://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#ix-indexer-is-deprecated
+  df_tmp = df_num.ix[:,self.cols[0:self.num_col]]
+/lustre7/home/lustre4/ac144809/tool/py37/lib/python3.7/site-packages/pandas/core/indexing.py:808: FutureWarning: 
+.ix is deprecated. Please use
+.loc for label based indexing or
+.iloc for positional indexing
+
+See the documentation here:
+http://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#ix-indexer-is-deprecated
+  retval = getattr(retval, self.name)._getitem_axis(key, axis=i)
+/lustre7/home/lustre4/ac144809/study/Circular-genome-visualizer/bin_singularity/createCircos.py:110: FutureWarning: 
+.ix is deprecated. Please use
+.loc for label based indexing or
+.iloc for positional indexing
+
+See the documentation here:
+http://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#ix-indexer-is-deprecated
+  tmp = df_tmp.ix[row]
+/lustre7/home/lustre4/ac144809/study/Circular-genome-visualizer/bin_singularity/createCircos.py:150: FutureWarning: 
+.ix is deprecated. Please use
+.loc for label based indexing or
+.iloc for positional indexing
+
+See the documentation here:
+http://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#ix-indexer-is-deprecated
+  df_comp = df_cons.ix[df_cons[col] != "-", [col, "Consensus"]]
+/lustre7/home/lustre4/ac144809/study/Circular-genome-visualizer/bin_singularity/createCircos.py:171: FutureWarning: 
+.ix is deprecated. Please use
+.loc for label based indexing or
+.iloc for positional indexing
+
+See the documentation here:
+http://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#ix-indexer-is-deprecated
+  df_cons.ix[df_cons[col] !="-",col] = out_df
+/lustre7/home/lustre4/ac144809/study/Circular-genome-visualizer/bin_singularity/visualizeUtil.py:49: FutureWarning: 
+.ix is deprecated. Please use
+.loc for label based indexing or
+.iloc for positional indexing
+
+See the documentation here:
+http://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#ix-indexer-is-deprecated
+  tmp = df.ix[df[col] != "-",[col,"Consensus"]]
+/lustre7/home/lustre4/ac144809/tool/py37/lib/python3.7/site-packages/pandas/core/indexing.py:808: FutureWarning: 
+.ix is deprecated. Please use
+.loc for label based indexing or
+.iloc for positional indexing
+
+See the documentation here:
+http://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#ix-indexer-is-deprecated
+  retval = getattr(retval, self.name)._getitem_axis(key, axis=i)
+/lustre7/home/lustre4/ac144809/study/Circular-genome-visualizer/bin_singularity/visualizeUtil.py:75: FutureWarning: 
+.ix is deprecated. Please use
+.loc for label based indexing or
+.iloc for positional indexing
+
+See the documentation here:
+http://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#ix-indexer-is-deprecated
+  info = df_info.ix[Loop]
+/lustre7/home/lustre4/ac144809/study/Circular-genome-visualizer/bin_singularity/visualizeUtil.py:95: FutureWarning: 
+.ix is deprecated. Please use
+.loc for label based indexing or
+.iloc for positional indexing
+
+See the documentation here:
+http://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#ix-indexer-is-deprecated
+  Acc_sorted = df_info_sorted.ix[:,0]
+/lustre7/home/lustre4/ac144809/study/Circular-genome-visualizer/bin_singularity/visualizeUtil.py:27: FutureWarning: 
+.ix is deprecated. Please use
+.loc for label based indexing or
+.iloc for positional indexing
+
+See the documentation here:
+http://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#ix-indexer-is-deprecated
+  out.ix[out[1] > consensus_gsize, 1] -= consensus_gsize
+/lustre7/home/lustre4/ac144809/tool/py37/lib/python3.7/site-packages/pandas/core/indexing.py:947: FutureWarning: 
+.ix is deprecated. Please use
+.loc for label based indexing or
+.iloc for positional indexing
+
+See the documentation here:
+http://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#ix-indexer-is-deprecated
+  return getattr(section, self.name)[new_key]
+/lustre7/home/lustre4/ac144809/study/Circular-genome-visualizer/bin_singularity/visualizeUtil.py:28: FutureWarning: 
+.ix is deprecated. Please use
+.loc for label based indexing or
+.iloc for positional indexing
+
+See the documentation here:
+http://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#ix-indexer-is-deprecated
+  out.ix[out[2] > consensus_gsize, 2] -= consensus_gsize
+/lustre7/home/lustre4/ac144809/study/Circular-genome-visualizer/bin_singularity/visualizeUtil.py:38: FutureWarning: 
+.ix is deprecated. Please use
+.loc for label based indexing or
+.iloc for positional indexing
+
+See the documentation here:
+http://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#ix-indexer-is-deprecated
+  out.ix[out[1] > out[2],2] = consensus_gsize
+/lustre7/home/lustre4/ac144809/study/Circular-genome-visualizer/bin_singularity/visualizeUtil.py:36: FutureWarning: 
+.ix is deprecated. Please use
+.loc for label based indexing or
+.iloc for positional indexing
+
+See the documentation here:
+http://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#ix-indexer-is-deprecated
+  out.ix[out[1] > consensus_gsize, 1] -= consensus_gsize
+/lustre7/home/lustre4/ac144809/study/Circular-genome-visualizer/bin_singularity/visualizeUtil.py:37: FutureWarning: 
+.ix is deprecated. Please use
+.loc for label based indexing or
+.iloc for positional indexing
+
+See the documentation here:
+http://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#ix-indexer-is-deprecated
+  out.ix[out[2] > consensus_gsize, 2] -= consensus_gsize
+runAfterBlastProcess.py:43: FutureWarning: The signature of `Series.to_csv` was aligned to that of `DataFrame.to_csv`, and argument 'header' will change its default value from False to True: please pass an explicit value to suppress this warning.
+  pd.Series(timeRecorder).to_csv(RootDir + "Calculation_times.txt", header = None, index = None)

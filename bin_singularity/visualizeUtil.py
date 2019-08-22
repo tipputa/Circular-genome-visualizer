@@ -130,7 +130,7 @@ def readInfo(RootDir, df_name, CircosIN, minCount = None):
     df_info = pd.read_csv(df_name, sep = "\t")  
     df_locusTag = pd.read_csv(RootDir + '/data/locusTag_aligned_angle.tsv', delimiter = "\t")
     if minCount is not None:
-        df_locusTag = df_locusTag[df_locusTag["Count"]>=minCount]
+        df_locusTag = df_locusTag[df_locusTag["Count"]>=int(minCount)]
     consensus_genomesize = df_info.ix[:,1].mean()
     accList = df_info.ix[:,0]
     for acc in accList:
