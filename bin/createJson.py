@@ -43,7 +43,9 @@ class Runs():
             tmp["genome_name"] = df.iloc[i,0]
             tmp["acc"] = df.iloc[i,1]
             tmp["genome_size"] = int(df.iloc[i,2])
-            tmp["distance_from_consensus"] = int(df.iloc[i,3])
+            tmp["strand"] = int(df.iloc[i,3])
+            tmp["rotated_angle"] = int(df.iloc[i,4])
+            tmp["distance_from_consensus"] = int(df.iloc[i,5])
             tmp["order"] = i
             for j in range(0, len(cIn_rotated.index)):
                 gene = cl.OrderedDict()
