@@ -63,7 +63,7 @@ class Runs():
             count = len(tmp_num)
             tmp_mean = round(tmp_num.mean())
             tmp_std = round(float(tmp_num.std()),2)
-            med = int(count / 2 + 0.5) - 1
+            med = int(count / 2 + 0.5) 
             sorted = tmp_num[tmp_num.argsort(order=False)]
             tmp_median = sorted[med]
             tmp_medianMean = round(tmp_num[(tmp_num < tmp_median + median_range) & (tmp_num > tmp_median - median_range)].mean())
