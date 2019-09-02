@@ -1,5 +1,5 @@
-NC_000915.1, start bp: 214, End bp: 1649017, Number of visualized genes: 1431, Number of removal genes: 14
-NC_011333.1, start bp: 0, End bp: 1648959, Number of visualized genes: 1460, Number of removal genes: 84
-NC_011498.1, start bp: 12, End bp: 1648787, Number of visualized genes: 1471, Number of removal genes: 97
-NC_012973.1, start bp: 109, End bp: 1649028, Number of visualized genes: 1416, Number of removal genes: 83
-NC_014256.1, start bp: 0, End bp: 1648508, Number of visualized genes: 1502, Number of removal genes: 66
+NC_011498.1 = Start position: 12, End position: 1648787, Number of removed genes:97
+NC_000915.1 = Start position: 214, End position: 1649017, Number of removed genes:14
+NC_012973.1 = Start position: 109, End position: 1649028, Number of removed genes:83
+NC_011333.1 = Start position: 0, End position: 1648959, Number of removed genes:84
+NC_014256.1 = Start position: 0, End position: 1648508, Number of removed genes:66
