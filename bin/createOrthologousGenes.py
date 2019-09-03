@@ -177,7 +177,7 @@ class Run():
     
         for file in files:
             if file.endswith(".gb") or file.endswith('.gbk'): 
-                converter.getPosition(file, df)
+                converter.getPosition(gbDir + file, df)
         return(df)
     
     
