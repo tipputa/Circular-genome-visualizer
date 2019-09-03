@@ -41,6 +41,6 @@ if __name__ == '__main__':
     
     os.chdir(RootDir)
     if (afterBlast):
-        createOrtho.clustering_woDuplicated(timeRecorder, RootDir, gbDir)
-    else:
         createOrtho.clustering_woDuplicated_afterBlast(timeRecorder, RootDir, gbDir)
+    else:
+        createOrtho.clustering_woDuplicated(timeRecorder, RootDir, gbDir)
