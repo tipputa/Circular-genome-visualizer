@@ -18,7 +18,7 @@ def createDB(fastaFileName, dbFileName, logName, dbType="prot"):
 
 def blastp(queryFileName, dbFileName, outFileName):
     comline = NcbiblastxCommandline(query=queryFileName, db=dbFileName, out=outFileName,
-                                    cmd="blastp", evalue=0.001, outfmt=5, num_alignments=1)
+                                    cmd="blastp", evalue=0.00001, outfmt=5, num_alignments=1)
     stdout, stderr = comline()
     return stdout, stderr
 

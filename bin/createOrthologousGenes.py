@@ -109,11 +109,18 @@ class Run():
                 outputFile = self.blastResultDir + id + "vs" + id2 + ".tsv"
                 blast2tsv.main(forwardResult, reverseResult, targetSummary, outputFile)
     
+    def afterBlast(self, list):
+        for id in list:
+            for id2 in list:
+                forwardResult = self.blastResultDir + id + "vs" + id2 + ".xml"
+                reverseResult = self.blastResultDir + id2 + "vs" + id + ".xml"
+                targetSummary = self.summaryDir + id2 + ".tsv"
+                outputFile = self.blastResultDir + id + "vs" + id2 + ".tsv"
+                blast2tsv.main(forwardResult, reverseResult, targetSummary, outputFile)
+    
     def cTable(self, pivot, targetList):
-        filterFunc = createTable2.createFilterFunction(score=0, identity=30, similarity=0, Qcoverage=0, Tcoverage=0, BBH=True)
         D = createTable2.createTable(self.blastResultDir,pivot, targetList)
-        D.applymap(filterFunc)
-        DL = D.apply(createTable2.LOCUSTAG, axis=1)
+        DL = D.applymap(lambda x: x.locusTag)
         DL.to_csv(self.blastResultDir + pivot + "_locusTag.tsv", sep="\t", na_rep='-',index= None)
         return(DL)
         
@@ -130,7 +137,7 @@ class Run():
         output = out.drop_duplicates()
         output2 = self.removeHyphen(output)
         return(output2)
-        
+    
     def removeHyphen(self, df):
         nrow, ncol = df.shape
         tag = []
@@ -181,4 +188,75 @@ def runsWOblast(timeRecorder, RootDir, gbDir):
     rec.fin("Making BLAST result tables", timeRecorder)
 
 
+def clustering_woDuplicated(timeRecorder, RootDir, gbDir):
+    rec = recorder.timeRecord()        
+    run = Run(RootDir, gbDir)
+    print("1. Creating BLASTDB and proteinFasta\n")
+    acc, fileNames = run.makeBlastDB(gbDir)
+    output = ''.join(fileNames)
+    with open(run.RootDir + "Input_GBs.txt", 'w') as f:
+        f.write(output)
+    rec.fin("Before BLAST", timeRecorder)
+    print("\n2. Running BLAST\n")
+    run.blastall(acc)
+    rec.fin("BLASTexecute", timeRecorder)
+
+    print("\n3. Parsing BLAST output\n")
+    dfs_tmp = run.makeTable(acc)
+    dfs = clustering(dfs_tmp)
+    dfs.to_csv(run.dataDir + "OrthologousGeneTag.tsv", sep = "\t")
+    df_position=convertLocusTag2StartPosition(gbDir, dfs)
+    df_position.to_csv(run.dataDir + "OrthologousGenePosition.tsv", sep = "\t")    
+    print("Output blast result table (" + RootDir + "data/OrthologousGeneTag.tsv)")
+    print("Output blast result table (" + RootDir + "data/OrthologousGenePosition.tsv)")
+    rec.fin("Making BLAST result tables", timeRecorder)
+
+
+def clustering_woDuplicated_afterBlast(timeRecorder, RootDir, gbDir):
+    rec = recorder.timeRecord()
+    run = Run(RootDir, gbDir)
+    print("1. Skip: Creating BLASTDB and proteinFasta\n")
+    print("2. Reading .gb files; Skip: Running BLAST\n")
+    acc = run.makeAccList(gbDir)
+    run.afterBlast(acc)
+    print("\n3. Parsing BLAST output\n")
+    dfs_tmp = run.makeTable(acc)
+    dfs = clustering(dfs_tmp)
+    dfs.to_csv(run.dataDir + "OrthologousGeneTag.tsv", sep = "\t")
+    df_position=convertLocusTag2StartPosition(gbDir, dfs)
+    df_position.to_csv(run.dataDir + "OrthologousGenePosition.tsv", sep = "\t")    
+    print("Output blast result table (" + RootDir + "data/OrthologousGeneTag.tsv)")
+    print("Output blast result table (" + RootDir + "data/OrthologousGenePosition.tsv)")
+    rec.fin("Making BLAST result tables", timeRecorder)
+
+
+def clustering(df):
+    nrow, ncol = df.shape
+    duprows = set()
+    for col in range(0,ncol):
+        df_tmp = df.iloc[:,col]
+        df_tmp2 = df_tmp[~df_tmp.isin(["-"])]
+        dup = set(df_tmp2[df_tmp2.duplicated(keep=False)].index)
+        duprows = duprows.union(dup)
+    allrows = set(range(0,nrow))
+    targetRows = allrows.difference(duprows)
+    df_res=df.iloc[list(targetRows),:]
+    return df_res
+
+
+def convertLocusTag2StartPosition(gbDir, df):
+    import getPositionFromGB as converter
     
+    files = os.listdir(gbDir)
+
+    for file in files:
+        if file.endswith(".gb") or file.endswith('.gbk'): 
+            converter.getPosition(file, df)
+    return(df)
+
+
+
+
+
+
+

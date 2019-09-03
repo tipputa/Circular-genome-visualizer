@@ -19,5 +19,5 @@ def createDB(fastaFileName, dbFileName, logName, dbType="prot"):
 def blastp(queryFileName, dbFileName, outFileName):
     toolPath = 'singularity exec /usr/local/biotools/b/blast\:2.5.0--boost1.64_2 blastp'
     command = " ".join([toolPath, "-query", queryFileName, "-db", dbFileName, "-out", outFileName,
-        "-evalue 0.001", "-outfmt 5", "-num_alignments 1"])
+        "-evalue 0.00001", "-outfmt 5", "-num_alignments 1"])
     os.system(command)
