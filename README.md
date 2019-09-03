@@ -119,6 +119,21 @@ You can edit the visualization result, such as the number of genomes and the rin
  - Deviation (Original): The deviation to the consensus before alignment
  - optional: you can add the new column for sorting the ring order.
 
+## Utility
+### Create orthologous gene cluster table
+```sh
+python runCreateOrthologousTable.py <output directory> <input directory (GenBank files)>
+```
+Two required arguments are as follows:
+<ol>
+<li> path to the output directory </li>
+<li> path to the directory containing GenBank files (.gb) </li>
+</ol>
+
+#### output files (clustering result)
+
++ "OrthologousGeneTag.tsv": locus tag matrix
++ "OrthologousGenePosition.tsv": gene start position matrix
 
 ## Test run
 #### Test data: 5 Helicobacter pylori genomes
