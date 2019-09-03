@@ -26,19 +26,12 @@ if __name__ == '__main__':
     afterBlast = False
     
     if len(sys.argv)==4:
-        if(sys.argv[3] == "True"):
-            RootDir = sys.argv[1] + "/"
-            gbDir = sys.argv[2] + "/"
-            afterBlast = True
-        elif(sys.argv[3] == "False"):
-            RootDir = sys.argv[1] + "/"
-            gbDir = sys.argv[2] + "/"
-        else:
-            print(useage)
-            quit()
-
+        RootDir = sys.argv[1] + "/"
+        gbDir = sys.argv[2] + "/"
+        afterBlast = True
+  
         
-    if len(sys.argv)==3:
+    elif len(sys.argv)==3:
         RootDir = sys.argv[1] + "/"
         gbDir = sys.argv[2] + "/"
         
