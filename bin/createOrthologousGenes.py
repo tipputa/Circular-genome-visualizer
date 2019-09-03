@@ -144,12 +144,12 @@ class Run():
         sum = 0
         for i in range(0, nrow):
             for j in range(0,ncol):
-                if not df.ix[i,j] == "-":
+                if not df.iloc[i,j] == "-":
                     break
                 else:
                     sum = sum + 1
             if(sum == ncol):
-                tag.append(df.ix[i].name)
+                tag.append(df.iloc[i].name)
             sum=0    
         df = df.drop(tag)
         return(df)
@@ -158,6 +158,7 @@ class Run():
 
     def clustering(self, df):
         nrow, ncol = df.shape
+        df.index = range(0,len(df.index))
         duprows = set()
         for col in range(0,ncol):
             df_tmp = df.iloc[:,col]
@@ -168,7 +169,6 @@ class Run():
         targetRows = allrows.difference(duprows)
         df_res=df.iloc[list(targetRows),:]
         return df_res
-    
     
     def convertLocusTag2StartPosition(self, gbDir, df):
         import getPositionFromGB as converter
@@ -256,8 +256,3 @@ def clustering_woDuplicated_afterBlast(timeRecorder, RootDir, gbDir):
     print("Output blast result table (" + RootDir + "data/OrthologousGeneTag.tsv)")
     print("Output blast result table (" + RootDir + "data/OrthologousGenePosition.tsv)")
     rec.fin("Making BLAST result tables", timeRecorder)
-
-
-
-
-
