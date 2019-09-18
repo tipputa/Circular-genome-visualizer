@@ -108,7 +108,7 @@ class Run():
                 targetSummary = self.summaryDir + id2 + ".tsv"
                 outputFile = self.blastResultDir + id + "vs" + id2 + ".tsv"
                 blast2tsv.main(forwardResult, reverseResult, targetSummary, outputFile)
-
+    
     def afterBlast(self, list):
         for id in list:
             for id2 in list:
@@ -137,22 +137,50 @@ class Run():
         output = out.drop_duplicates()
         output2 = self.removeHyphen(output)
         return(output2)
-        
+    
     def removeHyphen(self, df):
         nrow, ncol = df.shape
         tag = []
         sum = 0
         for i in range(0, nrow):
             for j in range(0,ncol):
-                if not df.ix[i,j] == "-":
+                if not df.iloc[i,j] == "-":
                     break
                 else:
                     sum = sum + 1
             if(sum == ncol):
-                tag.append(df.ix[i].name)
+                tag.append(df.iloc[i].name)
             sum=0    
         df = df.drop(tag)
         return(df)
+
+
+
+    def clustering(self, df):
+        nrow, ncol = df.shape
+        df.index = range(0,len(df.index))
+        duprows = set()
+        for col in range(0,ncol):
+            df_tmp = df.iloc[:,col]
+            df_tmp2 = df_tmp[~df_tmp.isin(["-"])]
+            dup = set(df_tmp2[df_tmp2.duplicated(keep=False)].index)
+            duprows = duprows.union(dup)
+        allrows = set(range(0,nrow))
+        targetRows = allrows.difference(duprows)
+        df_res=df.iloc[list(targetRows),:]
+        return df_res
+    
+    def convertLocusTag2StartPosition(self, gbDir, df):
+        import getPositionFromGB as converter
+        
+        files = os.listdir(gbDir)
+    
+        for file in files:
+            if file.endswith(".gb") or file.endswith('.gbk'): 
+                converter.getPosition(gbDir + file, df)
+        return(df)
+    
+    
 
  
 def runs(timeRecorder, RootDir, gbDir):
@@ -182,7 +210,6 @@ def runsWOblast(timeRecorder, RootDir, gbDir):
     print("2. Reading .gb files; Skip: Running BLAST\n")
     acc = run.makeAccList(gbDir)
     print("\n3. Parsing BLAST output\n")
-    run.afterBlast(acc)
     dfs=run.makeTable(acc)
     dfs.to_csv(run.dataDir + "all_blast_results.tsv", sep = "\t", index = None)
     print("Output blast result table (" + RootDir + "data/all_blast_results.tsv)")
@@ -204,9 +231,9 @@ def clustering_woDuplicated(timeRecorder, RootDir, gbDir):
 
     print("\n3. Parsing BLAST output\n")
     dfs_tmp = run.makeTable(acc)
-    dfs = clustering(dfs_tmp)
+    dfs = run.clustering(dfs_tmp)
     dfs.to_csv(run.dataDir + "OrthologousGeneTag.tsv", sep = "\t")
-    df_position=convertLocusTag2StartPosition(gbDir, dfs)
+    df_position = run.convertLocusTag2StartPosition(gbDir, dfs)
     df_position.to_csv(run.dataDir + "OrthologousGenePosition.tsv", sep = "\t")    
     print("Output blast result table (" + RootDir + "data/OrthologousGeneTag.tsv)")
     print("Output blast result table (" + RootDir + "data/OrthologousGenePosition.tsv)")
@@ -222,37 +249,10 @@ def clustering_woDuplicated_afterBlast(timeRecorder, RootDir, gbDir):
     run.afterBlast(acc)
     print("\n3. Parsing BLAST output\n")
     dfs_tmp = run.makeTable(acc)
-    dfs = clustering(dfs_tmp)
+    dfs = run.clustering(dfs_tmp)
     dfs.to_csv(run.dataDir + "OrthologousGeneTag.tsv", sep = "\t")
-    df_position=convertLocusTag2StartPosition(gbDir, dfs)
+    df_position = run.convertLocusTag2StartPosition(gbDir, dfs)
     df_position.to_csv(run.dataDir + "OrthologousGenePosition.tsv", sep = "\t")    
     print("Output blast result table (" + RootDir + "data/OrthologousGeneTag.tsv)")
     print("Output blast result table (" + RootDir + "data/OrthologousGenePosition.tsv)")
     rec.fin("Making BLAST result tables", timeRecorder)
-
-
-def clustering(df):
-    nrow, ncol = df.shape
-    duprows = set()
-    for col in range(0,ncol):
-        df_tmp = df.iloc[:,col]
-        df_tmp2 = df_tmp[~df_tmp.isin(["-"])]
-        dup = set(df_tmp2[df_tmp2.duplicated(keep=False)].index)
-        duprows = duprows.union(dup)
-    allrows = set(range(0,nrow))
-    targetRows = allrows.difference(duprows)
-    df_res=df.iloc[list(targetRows),:]
-    return df_res
-
-
-def convertLocusTag2StartPosition(gbDir, df):
-    import getPositionFromGB as converter
-    
-    files = os.listdir(gbDir)
-
-    for file in files:
-        if file.endswith(".gb") or file.endswith('.gbk'): 
-            converter.getPosition(gbDir + file, df)
-    return(df)
-
-    
