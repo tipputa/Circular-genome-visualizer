@@ -1,6 +1,5 @@
 #$ -S /bin/bash
 #$ -cwd
-#$ -pe def_slot 1 
 #$ -o /dev/null
 #$ -e /dev/null
 #$ -pe def_slot 4
